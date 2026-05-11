@@ -1,0 +1,59 @@
+# Kibana Index Patterns Configuration for DBCostOps
+# Purpose: Default index patterns and navigation settings
+# Author: DBCostOps Team
+# Version: 2.0
+
+# =============================================================================
+# INDEX MANAGEMENT
+# =============================================================================
+
+# Kibana internal indices
+kibana.index: ".kibana"
+xpack.task_manager.index: ".kibana_task_manager"
+
+# =============================================================================
+# DEFAULT NAVIGATION
+# =============================================================================
+
+# Default application and route
+kibana.defaultAppId: "discover"
+kibana.defaultRoute: "/app/discover"
+
+# =============================================================================
+# SAVED OBJECTS CONFIGURATION
+# =============================================================================
+
+# Import/Export settings
+xpack.savedObjects.maxImportPayloadBytes: 26214400
+xpack.savedObjects.import.timeout: 60000
+
+# =============================================================================
+# DBCOSTOPS SPECIFIC SETTINGS
+# =============================================================================
+
+# Default time range for dashboards
+kibana.timepicker:timeDefaults: "{ \"from\": \"now-7d\", \"to\": \"now\" }"
+
+# Auto-create index patterns for DBCostOps
+xpack.indexManagement.defaultSettings: {
+  "dbcostops_metrics-*": {
+    "timeFieldName": "timestamp",
+    "title": "DBCOSTOPS Metrics"
+  },
+  "dbcostops_optimization-*": {
+    "timeFieldName": "timestamp",
+    "title": "DBCOSTOPS Optimization"
+  },
+  "dbcostops_backup-*": {
+    "timeFieldName": "timestamp",
+    "title": "DBCOSTOPS Backup"
+  },
+  "dbcostops_monitoring-*": {
+    "timeFieldName": "timestamp",
+    "title": "DBCOSTOPS Monitoring"
+  },
+  "dbcostops_compliance-*": {
+    "timeFieldName": "timestamp",
+    "title": "DBCOSTOPS Compliance"
+  }
+}
