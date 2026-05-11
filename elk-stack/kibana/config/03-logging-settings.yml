@@ -1,0 +1,44 @@
+# Kibana Logging Configuration for DBCostOps
+# Purpose: Logging and monitoring settings
+# Author: DBCostOps Team
+# Version: 2.0
+
+# =============================================================================
+# LOGGING CONFIGURATION
+# =============================================================================
+
+# Log file configuration
+logging.appenders.file:
+  type: file
+  fileName: /var/log/kibana/kibana.log
+  layout:
+    type: json
+
+# Log levels
+logging.root:
+  level: info
+  appenders:
+    - default
+    - file
+
+# =============================================================================
+# AUDIT LOGGING
+# =============================================================================
+
+# Enable audit logging for security monitoring
+xpack.audit.enabled: false
+
+# =============================================================================
+# TELEMETRY CONFIGURATION
+# =============================================================================
+
+# Disable telemetry for local development
+telemetry.enabled: false
+
+# =============================================================================
+# REGIONAL SETTINGS
+# =============================================================================
+
+# Localization settings
+i18n.locale: "en"
+i18n.defaultLocale: "en"
