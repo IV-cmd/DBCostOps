@@ -1,0 +1,26 @@
+# Kibana Server Configuration for DBCostOps
+# Purpose: Core server and network settings
+# Author: DBCostOps Team
+# Version: 2.0
+
+# =============================================================================
+# SERVER CONFIGURATION
+# =============================================================================
+
+server.name: "dbcostops-kibana"
+server.host: "0.0.0.0"
+server.port: 5601
+
+# =============================================================================
+# ELASTICSEARCH CONNECTION
+# =============================================================================
+
+elasticsearch.hosts: ["http://elasticsearch:9200"]
+
+# =============================================================================
+# SECURITY CONFIGURATION
+# =============================================================================
+
+xpack.security.enabled: false
+xpack.monitoring.enabled: true
+xpack.monitoring.ui.container.elasticsearch.enabled: true
