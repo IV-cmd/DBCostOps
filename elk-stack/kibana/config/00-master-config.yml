@@ -1,0 +1,10 @@
+# Kibana Master Configuration for DBCostOps
+# Purpose: Include all configuration modules
+# Author: DBCostOps Team
+# Version: 2.0
+
+# Include all configuration modules in order
+include: 01-server-settings.yml
+include: 02-performance-settings.yml
+include: 03-logging-settings.yml
+include: 04-index-patterns.yml
