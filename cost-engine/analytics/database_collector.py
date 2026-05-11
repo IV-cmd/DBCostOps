@@ -9,6 +9,8 @@ import mysql.connector
 import pymongo
 import psutil
 import time
+import json
+import socket
 from datetime import datetime
 from typing import Dict, Any, List
 import os
@@ -22,6 +24,15 @@ class DatabaseMetricsCollector:
     def __init__(self):
         self.pricing = PricingDatabase()
         self.connections = {}
+        self.logstash_ports = {
+            'postgresql': 5000,
+            'mysql': 5001,
+            'mongodb': 5002,
+            'cost-optimizer': 5003,
+            'backup': 5004,
+            'monitoring': 5005,
+            'compliance': 5006
+        }
         self._init_connections()
     
     def _init_connections(self):
@@ -30,10 +41,10 @@ class DatabaseMetricsCollector:
             # PostgreSQL connection
             self.connections['postgresql'] = psycopg2.connect(
                 host='localhost',
-                port=5432,
+                port=5433,
                 database='dbcostops_monitoring',
-                user='dbcostops_monitor',
-                password='monitor_password'
+                user='dbcostops_user',
+                password='dbcostops_password'
             )
             
             # MySQL connection
@@ -41,13 +52,13 @@ class DatabaseMetricsCollector:
                 host='localhost',
                 port=3306,
                 database='dbcostops_monitoring',
-                user='dbcostops_monitor',
-                password='monitor_password'
+                user='dbcostops_user',
+                password='dbcostops_password'
             )
             
             # MongoDB connection
             self.connections['mongodb'] = pymongo.MongoClient(
-                'mongodb://dbcostops_monitor:monitor_password@localhost:27017/dbcostops_monitoring'
+                'mongodb://dbcostops_user:dbcostops_password@localhost:27017/dbcostops_monitoring'
             )
             
         except Exception as e:
@@ -75,11 +86,11 @@ class DatabaseMetricsCollector:
                 """,
                 'query_performance': """
                     SELECT 
-                        avg(query_time) as avg_query_time,
-                        max(query_time) as max_query_time,
+                        avg(mean_exec_time) as avg_query_time,
+                        max(max_exec_time) as max_query_time,
                         sum(calls) as total_calls,
                         sum(total_exec_time) as total_exec_time
-                    FROM pg_stat_user_functions 
+                    FROM pg_stat_statements 
                     WHERE calls > 0
                 """,
                 'resource_usage': """
@@ -254,6 +265,9 @@ class DatabaseMetricsCollector:
             # Store in PostgreSQL for real-time analytics
             self._store_in_postgresql(database_type, metrics)
             
+            # Send to ELK stack for real-time analytics
+            self.send_to_logstash(database_type, metrics)
+            
             return True
             
         except Exception as e:
@@ -378,6 +392,34 @@ class DatabaseMetricsCollector:
                 print(f"Exception collecting {db_type} metrics: {e}")
         
         return all_metrics
+    
+    def send_to_logstash(self, service: str, metrics: Dict[str, Any]) -> bool:
+        """Send metrics to Logstash via TCP for ELK stack processing"""
+        try:
+            port = self.logstash_ports.get(service, 5000)  # Default to 5000
+            
+            # Prepare data for Logstash
+            logstash_data = {
+                'timestamp': datetime.now().isoformat(),
+                'service': service,
+                'node_name': f'{service}-primary',
+                'environment': 'production',
+                'metrics': metrics,
+                'cost_impact': self._calculate_cost_impact(metrics)
+            }
+            
+            # Send to Logstash via TCP
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.settimeout(5)  # 5 second timeout
+                s.connect(('localhost', port))
+                s.sendall(json.dumps(logstash_data).encode('utf-8'))
+                s.close()
+            
+            return True
+            
+        except Exception as e:
+            print(f"Error sending to Logstash: {e}")
+            return False
     
     def close_connections(self):
         """Close all database connections"""
