@@ -1,0 +1,32 @@
+# Elasticsearch Logging Configuration for DBCostOps
+# Purpose: Logging and monitoring settings
+# Author: DBCostOps Team
+# Version: 2.0
+
+# =============================================================================
+# LOGGING CONFIGURATION
+# =============================================================================
+
+# Log levels for different components
+logger:
+  level:
+    root: INFO
+    org.elasticsearch.cluster.routing.allocation: DEBUG
+    org.elasticsearch.index.shard: DEBUG
+
+# =============================================================================
+# AUDIT LOGGING
+# =============================================================================
+
+# Enable audit logging for security monitoring
+xpack.security.audit.enabled: false
+
+# =============================================================================
+# MONITORING SETTINGS
+# =============================================================================
+
+# Collection interval for monitoring data
+xpack.monitoring.collection.interval: 10s
+
+# Export monitoring data to the same cluster
+xpack.monitoring.elasticsearch.collection.enabled: true
