@@ -1,0 +1,42 @@
+# Kibana Performance Configuration for DBCostOps
+# Purpose: Performance tuning and optimization settings
+# Author: DBCostOps Team
+# Version: 2.0
+
+# =============================================================================
+# PERFORMANCE TUNING
+# =============================================================================
+
+# Request size limits
+server.maxPayloadBytes: 1048576
+server.compression: true
+
+# Connection settings
+server.rewriteBasePath: false
+
+# =============================================================================
+# CACHING CONFIGURATION
+# =============================================================================
+
+# Caching for better performance
+caching.enabled: true
+caching.maxAge: 60000
+
+# =============================================================================
+# SEARCH AND QUERY SETTINGS
+# =============================================================================
+
+# Search timeout
+elasticsearch.requestTimeout: 30000
+
+# Query optimization
+search.maxBucketsLimit: 10000
+
+# =============================================================================
+# REPORTING CONFIGURATION
+# =============================================================================
+
+# Cost optimization specific settings
+xpack.reporting.encryptionKey: "dbcostops_reporting_key"
+xpack.reporting.csv.maxSizeBytes: 10485760
+xpack.reporting.queue.timeout: 120000
