@@ -1,0 +1,200 @@
+{
+  "index_patterns": ["dbcostops_*"],
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "index.refresh_interval": "30s",
+    "index.codec": "best_compression",
+    "index.mapping.total_fields.limit": 2000,
+    "index.max_result_window": 50000,
+    "analysis": {
+      "analyzer": {
+        "dbcostops_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": ["lowercase", "stop"]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "@timestamp": {
+        "type": "date",
+        "format": "strict_date_optional_time||epoch_millis"
+      },
+      "timestamp": {
+        "type": "date",
+        "format": "strict_date_optional_time||epoch_millis"
+      },
+      "processed_at": {
+        "type": "date",
+        "format": "strict_date_optional_time||epoch_millis"
+      },
+      "database_type": {
+        "type": "keyword"
+      },
+      "metric_name": {
+        "type": "keyword"
+      },
+      "metric_value": {
+        "type": "double"
+      },
+      "cost_impact": {
+        "type": "double"
+      },
+      "cost_savings": {
+        "type": "double"
+      },
+      "optimization_recommendation": {
+        "type": "text",
+        "analyzer": "dbcostops_analyzer",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "environment": {
+        "type": "keyword"
+      },
+      "node_name": {
+        "type": "keyword"
+      },
+      "cluster": {
+        "type": "keyword"
+      },
+      "service": {
+        "type": "keyword"
+      },
+      "level": {
+        "type": "keyword"
+      },
+      "message": {
+        "type": "text",
+        "analyzer": "dbcostops_analyzer",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 2048
+          }
+        }
+      },
+      "cpu_usage": {
+        "type": "double"
+      },
+      "memory_usage": {
+        "type": "double"
+      },
+      "disk_usage": {
+        "type": "double"
+      },
+      "connections": {
+        "type": "integer"
+      },
+      "active_connections": {
+        "type": "integer"
+      },
+      "idle_connections": {
+        "type": "integer"
+      },
+      "query_hash": {
+        "type": "keyword"
+      },
+      "execution_time": {
+        "type": "double"
+      },
+      "rows_examined": {
+        "type": "integer"
+      },
+      "rows_returned": {
+        "type": "integer"
+      },
+      "backup_size": {
+        "type": "double"
+      },
+      "backup_size_mb": {
+        "type": "double"
+      },
+      "backup_size_bytes": {
+        "type": "long"
+      },
+      "backup_duration": {
+        "type": "double"
+      },
+      "backup_duration_seconds": {
+        "type": "integer"
+      },
+      "backup_status": {
+        "type": "keyword"
+      },
+      "compliance_check": {
+        "type": "keyword"
+      },
+      "compliance_status": {
+        "type": "keyword"
+      },
+      "compliance_score": {
+        "type": "double"
+      },
+      "recommendation_type": {
+        "type": "keyword"
+      },
+      "priority": {
+        "type": "keyword"
+      },
+      "status": {
+        "type": "keyword"
+      },
+      "tags": {
+        "type": "keyword"
+      },
+      "error_type": {
+        "type": "keyword"
+      },
+      "error_message": {
+        "type": "text",
+        "analyzer": "dbcostops_analyzer"
+      }
+    }
+  },
+  "aliases": {
+    "dbcostops_current": {},
+    "dbcostops_metrics": {
+      "filter": {
+        "term": {
+          "_index": "dbcostops_metrics-*"
+        }
+      }
+    },
+    "dbcostops_optimization": {
+      "filter": {
+        "term": {
+          "_index": "dbcostops_optimization-*"
+        }
+      }
+    },
+    "dbcostops_backup": {
+      "filter": {
+        "term": {
+          "_index": "dbcostops_backup-*"
+        }
+      }
+    },
+    "dbcostops_monitoring": {
+      "filter": {
+        "term": {
+          "_index": "dbcostops_monitoring-*"
+        }
+      }
+    },
+    "dbcostops_compliance": {
+      "filter": {
+        "term": {
+          "_index": "dbcostops_compliance-*"
+        }
+      }
+    }
+  }
+}
