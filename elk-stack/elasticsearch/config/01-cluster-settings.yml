@@ -1,0 +1,40 @@
+# Elasticsearch Cluster Configuration for DBCostOps
+# Purpose: Core cluster and node settings
+# Author: DBCostOps Team
+# Version: 2.0
+
+# =============================================================================
+# CLUSTER CONFIGURATION
+# =============================================================================
+
+cluster.name: "dbcostops-cluster"
+node.name: "dbcostops-node-1"
+
+# =============================================================================
+# NETWORK CONFIGURATION
+# =============================================================================
+
+network.host: 0.0.0.0
+http.port: 9200
+discovery.type: single-node
+
+# =============================================================================
+# DATA STORAGE CONFIGURATION
+# =============================================================================
+
+path.data: /usr/share/elasticsearch/data
+path.logs: /usr/share/elasticsearch/logs
+
+# =============================================================================
+# MEMORY CONFIGURATION
+# =============================================================================
+
+bootstrap.memory_lock: false
+
+# =============================================================================
+# SECURITY CONFIGURATION
+# =============================================================================
+
+xpack.security.enabled: false
+xpack.monitoring.enabled: true
+xpack.monitoring.collection.enabled: true
