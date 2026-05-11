@@ -1,0 +1,35 @@
+# Elasticsearch Index Configuration for DBCostOps
+# Purpose: Index management and performance settings
+# Author: DBCostOps Team
+# Version: 2.0
+
+# =============================================================================
+# INDEX MANAGEMENT
+# =============================================================================
+
+# Auto-index creation control
+action.auto_create_index: "+dbcostops_*,-*"
+action.destructive_requires_name: true
+
+# =============================================================================
+# PERFORMANCE TUNING
+# =============================================================================
+
+# Memory allocation for indices
+indices.memory.index_buffer_size: 10%
+indices.queries.cache.size: 5%
+indices.fielddata.cache.size: 40%
+
+# =============================================================================
+# INDEX TEMPLATES
+# =============================================================================
+
+# Default index template settings for DBCostOps
+# These settings are applied to all dbcostops_* indices
+index:
+  codec: best_compression
+  refresh_interval: 30s
+  max_result_window: 50000
+  mapping:
+    total_fields:
+      limit: 2000
