@@ -1,0 +1,345 @@
+services:
+  # Puppet Server
+  puppet-server:
+    image: puppet/puppetserver:7.9.0
+    container_name: dbcostops-puppet-server
+    hostname: puppet-server
+    ports:
+      - "8140:8140"
+      - "8080:8080"
+      - "8443:8443"
+    volumes:
+      - ./puppet/code:/etc/puppetlabs/code
+      - ./puppet/puppetserver:/etc/puppetlabs/puppetserver
+      - ./puppet/hieradata:/etc/puppetlabs/hieradata
+      - puppet-server-data:/opt/puppetlabs/server/data/puppetserver
+    environment:
+      - PUPPET_SERVER_HOSTNAME=puppet-server
+      - PUPPET_DNS_ALT_NAMES=puppet-server,localhost
+    networks:
+      - dbcostops-network
+    restart: unless-stopped
+
+  # Puppet Agent (PostgreSQL)
+  puppet-agent-postgres:
+    image: puppet/puppet-agent:7.24.0
+    container_name: dbcostops-puppet-postgres
+    hostname: puppet-postgres
+    volumes:
+      - ./puppet/agent:/etc/puppetlabs/puppet
+      - puppet-postgres-data:/var/lib/puppet
+    environment:
+      - PUPPET_SERVER=puppet-server
+      - PUPPET_CA_SERVER=puppet-server
+    depends_on:
+      - puppet-server
+    networks:
+      - dbcostops-network
+    restart: unless-stopped
+
+  # Puppet Agent (MySQL)
+  puppet-agent-mysql:
+    image: puppet/puppet-agent:7.24.0
+    container_name: dbcostops-puppet-mysql
+    hostname: puppet-mysql
+    volumes:
+      - ./puppet/agent:/etc/puppetlabs/puppet
+      - puppet-mysql-data:/var/lib/puppet
+    environment:
+      - PUPPET_SERVER=puppet-server
+      - PUPPET_CA_SERVER=puppet-server
+    depends_on:
+      - puppet-server
+    networks:
+      - dbcostops-network
+    restart: unless-stopped
+
+  # Puppet Agent (MongoDB)
+  puppet-agent-mongodb:
+    image: puppet/puppet-agent:7.24.0
+    container_name: dbcostops-puppet-mongodb
+    hostname: puppet-mongodb
+    volumes:
+      - ./puppet/agent:/etc/puppetlabs/puppet
+      - puppet-mongodb-data:/var/lib/puppet
+    environment:
+      - PUPPET_SERVER=puppet-server
+      - PUPPET_CA_SERVER=puppet-server
+    depends_on:
+      - puppet-server
+    networks:
+      - dbcostops-network
+    restart: unless-stopped
+
+  # PostgreSQL Database
+  postgres-primary:
+    build:
+      context: ./databases/postgresql
+      dockerfile: Dockerfile
+    container_name: dbcostops-postgres-primary
+    hostname: postgres-primary
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=dbcostops
+      - POSTGRES_USER=dbcostops_user
+      - POSTGRES_PASSWORD=dbcostops_password
+      - POSTGRES_REPLICATION_USER=replicator
+      - POSTGRES_REPLICATION_PASSWORD=replicator_password
+    volumes:
+      - postgres-primary-data:/var/lib/postgresql/data
+      - ./databases/postgresql/init:/docker-entrypoint-initdb.d
+      - ./databases/postgresql/config/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+    networks:
+      - dbcostops-network
+    restart: unless-stopped
+
+  # PostgreSQL Replica
+  postgres-replica:
+    build:
+      context: ./databases/postgresql
+      dockerfile: Dockerfile
+    container_name: dbcostops-postgres-replica
+    hostname: postgres-replica
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_DB=dbcostops
+      - POSTGRES_USER=dbcostops_user
+      - POSTGRES_PASSWORD=dbcostops_password
+      - PGUSER=postgres
+      - POSTGRES_MASTER_SERVICE=postgres-primary
+      - POSTGRES_REPLICATION_USER=replicator
+      - POSTGRES_REPLICATION_PASSWORD=replicator_password
+    volumes:
+      - postgres-replica-data:/var/lib/postgresql/data
+      - ./databases/postgresql/replica:/docker-entrypoint-initdb.d
+    depends_on:
+      - postgres-primary
+    networks:
+      - dbcostops-network
+    restart: unless-stopped
+
+  # MySQL Database
+  mysql-primary:
+    build:
+      context: ./databases/mysql
+      dockerfile: Dockerfile
+    container_name: dbcostops-mysql-primary
+    hostname: mysql-primary
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=dbcostops
+      - MYSQL_USER=dbcostops_user
+      - MYSQL_PASSWORD=dbcostops_password
+    volumes:
+      - mysql-primary-data:/var/lib/mysql
+      - ./databases/mysql/init:/docker-entrypoint-initdb.d
+      - ./databases/mysql/config:/etc/mysql/conf.d
+    networks:
+      - dbcostops-network
+    restart: unless-stopped
+
+  # MongoDB Database
+  mongodb-primary:
+    build:
+      context: ./databases/mongodb
+      dockerfile: Dockerfile
+    container_name: dbcostops-mongodb-primary
+    hostname: mongodb-primary
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin_password
+      - MONGO_INITDB_DATABASE=dbcostops
+    volumes:
+      - mongodb-primary-data:/data/db
+      - ./databases/mongodb/init:/docker-entrypoint-initdb.d
+      - ./databases/mongodb/config/mongod.conf:/etc/mongod.conf:ro
+    networks:
+      - dbcostops-network
+    restart: unless-stopped
+
+  # Elasticsearch
+  elasticsearch:
+    build:
+      context: ./elk-stack/elasticsearch
+      dockerfile: Dockerfile
+    container_name: dbcostops-elasticsearch
+    hostname: elasticsearch
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+      - ./elk-stack/elasticsearch/config:/usr/share/elasticsearch/config
+    networks:
+      - dbcostops-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -qE '\"status\":\"(green|yellow)\"'"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  # Logstash
+  logstash:
+    build:
+      context: ./elk-stack/logstash
+      dockerfile: Dockerfile
+    container_name: dbcostops-logstash
+    hostname: logstash
+    ports:
+      - "5044:5044"
+      - "9600:9600"
+    volumes:
+      - ./elk-stack/logstash/config:/usr/share/logstash/pipeline
+      - ./elk-stack/logstash/config/templates:/usr/share/logstash/templates
+      - ./elk-stack/logstash/patterns:/usr/share/logstash/patterns
+    environment:
+      - "LS_JAVA_OPTS=-Xmx512m -Xms512m"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - dbcostops-network
+    restart: unless-stopped
+
+  # Kibana
+  kibana:
+    build:
+      context: ./elk-stack/kibana
+      dockerfile: Dockerfile
+    container_name: dbcostops-kibana
+    hostname: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - dbcostops-network
+    restart: unless-stopped
+
+  # Prometheus
+  prometheus:
+    build:
+      context: ./monitoring/prometheus
+      dockerfile: Dockerfile
+    container_name: dbcostops-prometheus
+    hostname: prometheus
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./monitoring/prometheus/config:/etc/prometheus
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - dbcostops-network
+    restart: unless-stopped
+
+  # Grafana
+  grafana:
+    build:
+      context: ./monitoring/grafana
+      dockerfile: Dockerfile
+    container_name: dbcostops-grafana
+    hostname: grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/config/02-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - ./monitoring/grafana/config/03-dashboard-settings.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
+    networks:
+      - dbcostops-network
+    restart: unless-stopped
+
+  # Rundeck
+  rundeck:
+    build:
+      context: ./rundeck
+      dockerfile: Dockerfile
+    container_name: dbcostops-rundeck
+    hostname: rundeck
+    ports:
+      - "4440:4440"
+    environment:
+      - RUNDECK_GRAILS_SERVERURL=http://localhost:4440
+      - RUNDECK_DATABASE_DRIVER=org.postgresql.Driver
+      - RUNDECK_DATABASE_URL=jdbc:postgresql://postgres-primary:5432/rundeck?autoReconnect=true
+      - RUNDECK_DATABASE_USERNAME=dbcostops_user
+      - RUNDECK_DATABASE_PASSWORD=dbcostops_password
+    volumes:
+      - rundeck-data:/home/rundeck/server/data
+      - ./rundeck/config:/home/rundeck/server/config
+      - ./rundeck/jobs:/home/rundeck/server/projects/dbcostops/jobs
+    depends_on:
+      - postgres-primary
+    networks:
+      - dbcostops-network
+    restart: unless-stopped
+
+  # Cost Engine API
+  cost-engine-api:
+    build:
+      context: .
+      dockerfile: cost_engine/Dockerfile
+    container_name: dbcostops-cost-engine
+    hostname: cost-engine-api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://dbcostops_user:dbcostops_password@postgres-primary:5432/dbcostops
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    depends_on:
+      - postgres-primary
+      - elasticsearch
+    networks:
+      - dbcostops-network
+    restart: unless-stopped
+
+
+volumes:
+  puppet-server-data:
+  puppet-postgres-data:
+  puppet-mysql-data:
+  puppet-mongodb-data:
+  postgres-primary-data:
+  postgres-replica-data:
+  mysql-primary-data:
+  mongodb-primary-data:
+  elasticsearch-data:
+  prometheus-data:
+  grafana-data:
+  rundeck-data:
+
+networks:
+  dbcostops-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1
