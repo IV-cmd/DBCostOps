@@ -1,0 +1,99 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "DBCOSTOPS - Alerts & Notifications",
+    "tags": ["dbcostops", "alerts", "notifications"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Active Alerts",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "ALERTS{alertstate=\"firing\"}",
+            "legendFormat": "{{alertname}} - {{severity}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": null},
+                {"color": "red", "value": null}
+              ]
+            },
+            "custom": {
+              "align": "auto",
+              "displayMode": "auto"
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Alerts by Severity",
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "count by (severity) (ALERTS{alertstate=\"firing\"})",
+            "legendFormat": "{{severity}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "color": {"mode": "palette-classic"}
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 3,
+        "title": "Alerts by Service",
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "count by (service) (ALERTS{alertstate=\"firing\"})",
+            "legendFormat": "{{service}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "color": {"mode": "palette-classic"}
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "Alert History",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(ALERTS_FOR_STATE[1h])",
+            "legendFormat": "{{alertname}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "color": {"mode": "palette-classic"}
+          }
+        },
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16}
+      }
+    ],
+    "time": {"from": "now-24h", "to": "now"},
+    "refresh": "30s",
+    "schemaVersion": 37,
+    "version": 1,
+    "uid": "dbcostops-alerts"
+  }
+}

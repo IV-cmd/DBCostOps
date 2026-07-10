@@ -1,0 +1,136 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "DBCOSTOPS - Backup Monitoring",
+    "tags": ["dbcostops", "backup", "monitoring"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Backup Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "dbcostops_backup_status",
+            "legendFormat": "{{status}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": null},
+                {"color": "red", "value": null}
+              ]
+            },
+            "mappings": [
+              {"options": {"0": {"color": "red", "index": 0, "text": "Failed"}}, "type": "value"},
+              {"options": {"1": {"color": "green", "index": 1, "text": "Success"}}, "type": "value"}
+            ]
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Backup Size Trend",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "dbcostops_backup_size_mb",
+            "legendFormat": "Backup Size (MB) - {{node_name}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "decbytes",
+            "color": {"mode": "palette-classic"}
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Backup Duration",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "dbcostops_backup_duration_seconds",
+            "legendFormat": "Duration (s) - {{node_name}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "color": {"mode": "palette-classic"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 300},
+                {"color": "red", "value": 600}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "Backup Success Rate",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "rate(dbcostops_backup_success_total[1h]) * 3600",
+            "legendFormat": "Success Rate per Hour"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 1},
+                {"color": "green", "value": 2}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      },
+      {
+        "id": 5,
+        "title": "Backup Events Timeline",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "dbcostops_backup_events",
+            "legendFormat": "{{event_type}} - {{node_name}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "custom": {
+              "align": "auto",
+              "displayMode": "auto"
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16}
+      }
+    ],
+    "time": {"from": "now-24h", "to": "now"},
+    "refresh": "30s",
+    "schemaVersion": 37,
+    "version": 1,
+    "uid": "dbcostops-backup"
+  }
+}

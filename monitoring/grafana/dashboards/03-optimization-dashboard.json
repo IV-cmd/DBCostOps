@@ -1,0 +1,135 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "DBCOSTOPS - Cost Optimization",
+    "tags": ["dbcostops", "optimization", "recommendations"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Optimization Recommendations",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "dbcostops_optimization_recommendations",
+            "legendFormat": "{{recommendation_type}} - {{priority}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": null},
+                {"color": "red", "value": null}
+              ]
+            },
+            "custom": {
+              "align": "auto",
+              "displayMode": "auto"
+            }
+          }
+        },
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {},
+              "indexByName": {},
+              "renameByName": {}
+            }
+          }
+        ],
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Recommendations by Priority",
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "count by (priority) (dbcostops_optimization_recommendations{status=\"pending\"})",
+            "legendFormat": "{{priority}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "color": {"mode": "palette-classic"}
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 3,
+        "title": "Potential Savings",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(dbcostops_optimization_potential_savings)",
+            "legendFormat": "Total Potential Savings"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "percentage",
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "yellow", "value": 10},
+                {"color": "red", "value": 25}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "Optimization Status",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "count by (status) (dbcostops_optimization_recommendations)",
+            "legendFormat": "{{status}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "color": {"mode": "palette-classic"}
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16}
+      },
+      {
+        "id": 5,
+        "title": "Implementation Timeline",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "increase(dbcostops_optimization_implemented_count[1d])",
+            "legendFormat": "Implementations per Day"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "color": {"mode": "palette-classic"}
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16}
+      }
+    ],
+    "time": {"from": "now-7d", "to": "now"},
+    "refresh": "1m",
+    "schemaVersion": 37,
+    "version": 1,
+    "uid": "dbcostops-optimization"
+  }
+}

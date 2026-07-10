@@ -1,0 +1,142 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "DBCOSTOPS - Database Performance",
+    "tags": ["dbcostops", "performance", "database"],
+    "style": "dark",
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "CPU Usage",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "avg by (node_name) (dbcostops_cpu_usage)",
+            "legendFormat": "{{node_name}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "color": {"mode": "palette-classic"},
+            "thresholds": {
+              "mode": "percentage",
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "yellow", "value": 70},
+                {"color": "red", "value": 90}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Memory Usage",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "avg by (node_name) (dbcostops_memory_usage)",
+            "legendFormat": "{{node_name}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "color": {"mode": "palette-classic"},
+            "thresholds": {
+              "mode": "percentage",
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "yellow", "value": 75},
+                {"color": "red", "value": 90}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Disk Usage",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "avg by (node_name) (dbcostops_disk_usage)",
+            "legendFormat": "{{node_name}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "color": {"mode": "palette-classic"},
+            "thresholds": {
+              "mode": "percentage",
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "yellow", "value": 80},
+                {"color": "red", "value": 95}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "Database Connections",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "sum by (node_name) (dbcostops_connections)",
+            "legendFormat": "Total Connections - {{node_name}}"
+          },
+          {
+            "expr": "sum by (node_name) (dbcostops_active_connections)",
+            "legendFormat": "Active Connections - {{node_name}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "color": {"mode": "palette-classic"}
+          }
+        },
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      },
+      {
+        "id": 5,
+        "title": "Query Performance",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "topk(10, avg by (query_hash, node_name) (dbcostops_query_execution_time))",
+            "legendFormat": "{{query_hash}} - {{node_name}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 0.5},
+                {"color": "red", "value": 1.0}
+              ]
+            }
+          }
+        },
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16}
+      }
+    ],
+    "time": {"from": "now-1h", "to": "now"},
+    "refresh": "15s",
+    "schemaVersion": 37,
+    "version": 1,
+    "uid": "dbcostops-performance"
+  }
+}
