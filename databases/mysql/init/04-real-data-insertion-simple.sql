@@ -103,15 +103,15 @@ BEGIN
     DECLARE storage_cost DECIMAL(10,2);
     DECLARE network_cost DECIMAL(10,2);
     
-    -- Extract basic metrics (simplified JSON parsing)
-    SET cpu_usage = 45.5;  -- Default values for now
-    SET memory_usage = 67.3;
-    SET disk_usage = 73.1;
-    SET connections = 10;
-    SET active_connections = 8;
-    SET instance_cost = 0.080;
-    SET storage_cost = 12.50;
-    SET network_cost = 5.20;
+    -- Extract metrics from JSON parameter
+    SET cpu_usage       = COALESCE(JSON_EXTRACT(metrics_json, '$.cpu_usage'), 0);
+    SET memory_usage    = COALESCE(JSON_EXTRACT(metrics_json, '$.memory_usage'), 0);
+    SET disk_usage      = COALESCE(JSON_EXTRACT(metrics_json, '$.disk_usage'), 0);
+    SET connections     = COALESCE(JSON_EXTRACT(metrics_json, '$.connections'), 0);
+    SET active_connections = COALESCE(JSON_EXTRACT(metrics_json, '$.active_connections'), 0);
+    SET instance_cost   = COALESCE(JSON_EXTRACT(metrics_json, '$.instance_cost'), 0);
+    SET storage_cost    = COALESCE(JSON_EXTRACT(metrics_json, '$.storage_cost'), 0);
+    SET network_cost    = COALESCE(JSON_EXTRACT(metrics_json, '$.network_cost'), 0);
     
     -- Call individual procedures
     CALL insert_real_cost_metrics(node_name, database_type, instance_cost, storage_cost, network_cost);

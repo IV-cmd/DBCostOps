@@ -8,7 +8,7 @@ SOURCE 02-schema-creation.sql;
 SOURCE 03-views-creation.sql;
 
 -- Step 4: Real data collection system
-SOURCE 04-real-data-insertion.sql;
+SOURCE 04-real-data-insertion-simple.sql;
 
 SELECT '' as separator;
 SELECT 'MySQL DBCostOps initialization completed!' as status;
