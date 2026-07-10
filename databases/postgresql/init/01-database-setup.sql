@@ -15,7 +15,7 @@ BEGIN
 END $$;
 
 -- Create monitoring database if it doesn't exist
-SELECT 'CREATE DATABASE :' || :'db_name'
+SELECT 'CREATE DATABASE ' || :'db_name'
 WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = :'db_name')\gexec
 
 -- Grant privileges to monitoring user
@@ -26,7 +26,6 @@ GRANT ALL PRIVILEGES ON DATABASE :db_name TO :monitor_user;
 
 -- Enable required extensions for monitoring
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
-CREATE EXTENSION IF NOT EXISTS pg_stat_activity;
 
 \echo 'PostgreSQL database setup completed successfully!'
 \echo 'Database: :' || :'db_name'

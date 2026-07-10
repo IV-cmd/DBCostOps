@@ -140,8 +140,8 @@ BEGIN
     cpu_usage := COALESCE((metrics_json_param->>'cpu_usage')::DECIMAL(5,2), 45.5);
     memory_usage := COALESCE((metrics_json_param->>'memory_usage')::DECIMAL(5,2), 67.3);
     disk_usage := COALESCE((metrics_json_param->>'disk_usage')::DECIMAL(5,2), 73.1);
-    connections := COALESCE((metrics_json_param->'connections'->>'current')::INT, 10);
-    active_connections := COALESCE((metrics_json_param->'connections'->>'active')::INT, 8);
+    connections := COALESCE((metrics_json_param->>'connections')::INT, 0);
+    active_connections := COALESCE((metrics_json_param->>'active_connections')::INT, 0);
     instance_cost := COALESCE((metrics_json_param->>'instance_cost')::DECIMAL(10,2), 0.080);
     storage_cost := COALESCE((metrics_json_param->>'storage_cost')::DECIMAL(10,2), 12.50);
     network_cost := COALESCE((metrics_json_param->>'network_cost')::DECIMAL(10,2), 5.20);
