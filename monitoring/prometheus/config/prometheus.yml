@@ -1,0 +1,84 @@
+# Prometheus configuration for DBCostOps
+# This is the single file Prometheus reads. The 0x-*.yml module files are
+# documentation only and are not loaded by Prometheus automatically.
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'dbcostops-cluster'
+    environment: 'development'
+
+# Rule files — path relative to this config file (/etc/prometheus/)
+rule_files:
+  - "03-alerting-rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 15s
+    metrics_path: /metrics
+
+  # PostgreSQL Exporter
+  - job_name: 'postgresql-exporter'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # MySQL Exporter
+  - job_name: 'mysql-exporter'
+    static_configs:
+      - targets: ['mysql-exporter:9104']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # MongoDB Exporter
+  - job_name: 'mongodb-exporter'
+    static_configs:
+      - targets: ['mongodb-exporter:9216']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # Node Exporter (System Metrics)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 15s
+    metrics_path: /metrics
+
+  # DBCostOps Cost Engine API — standard /metrics endpoint
+  - job_name: 'dbcostops-api'
+    static_configs:
+      - targets: ['cost-engine-api:8000']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # Elasticsearch Exporter
+  - job_name: 'elasticsearch-exporter'
+    static_configs:
+      - targets: ['elasticsearch-exporter:9114']
+    scrape_interval: 30s
+    metrics_path: /metrics
+
+  # DBCostOps Custom Metrics endpoint
+  - job_name: 'dbcostops-metrics'
+    static_configs:
+      - targets: ['cost-engine-api:8000']
+    scrape_interval: 60s
+    metrics_path: /dbcostops/metrics
+
+  # Docker Container Metrics
+  - job_name: 'docker'
+    static_configs:
+      - targets: ['docker-exporter:9323']
+    scrape_interval: 30s
+    metrics_path: /metrics

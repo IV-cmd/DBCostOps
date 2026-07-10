@@ -1,0 +1,142 @@
+groups:
+  - name: dbcostops.cost_alerts
+    rules:
+      # High total cost alert
+      - alert: HighTotalCost
+        expr: sum(dbcostops_total_cost) > 1000
+        for: 5m
+        labels:
+          severity: warning
+          service: cost-optimization
+        annotations:
+          summary: "High total database cost detected"
+          description: "Total database cost is {{ $value }} which exceeds the threshold of 1000"
+          
+      # Critical cost alert
+      - alert: CriticalTotalCost
+        expr: sum(dbcostops_total_cost) > 5000
+        for: 2m
+        labels:
+          severity: critical
+          service: cost-optimization
+        annotations:
+          summary: "Critical database cost detected"
+          description: "Total database cost is {{ $value }} which exceeds critical threshold of 5000"
+          
+      # High storage cost alert
+      - alert: HighStorageCost
+        expr: sum(dbcostops_storage_cost) > 500
+        for: 10m
+        labels:
+          severity: warning
+          service: storage-optimization
+        annotations:
+          summary: "High storage cost detected"
+          description: "Storage cost is {{ $value }} which exceeds threshold of 500"
+
+  - name: dbcostops.performance_alerts
+    rules:
+      # High CPU usage alert
+      - alert: HighCPUUsage
+        expr: avg by (node_name) (dbcostops_cpu_usage) > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: performance-monitoring
+        annotations:
+          summary: "High CPU usage on {{ $labels.node_name }}"
+          description: "CPU usage is {{ $value }}% on node {{ $labels.node_name }}"
+          
+      # High memory usage alert
+      - alert: HighMemoryUsage
+        expr: avg by (node_name) (dbcostops_memory_usage) > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: performance-monitoring
+        annotations:
+          summary: "High memory usage on {{ $labels.node_name }}"
+          description: "Memory usage is {{ $value }}% on node {{ $labels.node_name }}"
+          
+      # High disk usage alert
+      - alert: HighDiskUsage
+        expr: avg by (node_name) (dbcostops_disk_usage) > 90
+        for: 2m
+        labels:
+          severity: critical
+          service: storage-monitoring
+        annotations:
+          summary: "High disk usage on {{ $labels.node_name }}"
+          description: "Disk usage is {{ $value }}% on node {{ $labels.node_name }}"
+
+  - name: dbcostops.query_alerts
+    rules:
+      # Slow query alert
+      - alert: SlowQuery
+        expr: avg by (node_name) (dbcostops_query_execution_time) > 1.0
+        for: 3m
+        labels:
+          severity: warning
+          service: query-optimization
+        annotations:
+          summary: "Slow queries detected on {{ $labels.node_name }}"
+          description: "Average query execution time is {{ $value }}s on node {{ $labels.node_name }}"
+          
+      # High query cost alert
+      - alert: HighQueryCost
+        expr: sum by (node_name) (dbcostops_query_cost_impact) > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: query-optimization
+        annotations:
+          summary: "High query cost impact on {{ $labels.node_name }}"
+          description: "Query cost impact is {{ $value }} on node {{ $labels.node_name }}"
+
+  - name: dbcostops.backup_alerts
+    rules:
+      # Backup failure alert
+      - alert: BackupFailure
+        expr: dbcostops_backup_status{status="failed"} == 1
+        for: 0m
+        labels:
+          severity: critical
+          service: backup-monitoring
+        annotations:
+          summary: "Backup failed on {{ $labels.node_name }}"
+          description: "Backup operation failed on node {{ $labels.node_name }}"
+          
+      # Backup age alert
+      - alert: BackupTooOld
+        expr: time() - dbcostops_backup_last_success_timestamp > 86400
+        for: 0m
+        labels:
+          severity: warning
+          service: backup-monitoring
+        annotations:
+          summary: "Backup is older than 24 hours on {{ $labels.node_name }}"
+          description: "Last successful backup was {{ $value }} seconds ago on node {{ $labels.node_name }}"
+
+  - name: dbcostops.optimization_alerts
+    rules:
+      # High priority recommendations alert
+      - alert: HighPriorityRecommendations
+        expr: count by (node_name) (dbcostops_optimization_recommendations{priority="high", status="pending"}) > 5
+        for: 15m
+        labels:
+          severity: warning
+          service: optimization-monitoring
+        annotations:
+          summary: "Multiple high priority optimization recommendations on {{ $labels.node_name }}"
+          description: "{{ $value }} high priority recommendations pending on node {{ $labels.node_name }}"
+          
+      # No recent optimizations alert
+      - alert: NoRecentOptimizations
+        expr: time() - dbcostops_optimization_last_implemented_timestamp > 604800
+        for: 0m
+        labels:
+          severity: info
+          service: optimization-monitoring
+        annotations:
+          summary: "No optimizations implemented in the last 7 days"
+          description: "Last optimization was implemented {{ $value }} seconds ago"

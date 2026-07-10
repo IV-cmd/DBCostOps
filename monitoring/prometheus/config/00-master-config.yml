@@ -1,0 +1,4 @@
+# Include all configuration modules in order
+include: 01-global-settings.yml
+include: 02-scrape-configs.yml
+include: 03-alerting-rules.yml

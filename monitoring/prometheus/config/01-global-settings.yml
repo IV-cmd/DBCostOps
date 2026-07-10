@@ -1,0 +1,29 @@
+global:
+  # Default scrape interval
+  scrape_interval: 15s
+  
+  # Default evaluation interval for rules
+  evaluation_interval: 15s
+  
+  # External labels
+  external_labels:
+    cluster: 'dbcostops-cluster'
+    environment: 'development'
+
+rule_files:
+  - "rules/*.yml"
+
+# ALERTMANAGER CONFIGURATION
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+
+remote_write:
+  - url: "http://elasticsearch:9200/_prometheus/metrics"
+    queue_config:
+      max_samples_per_send: 1000
+      max_shards: 200
+      capacity: 2500

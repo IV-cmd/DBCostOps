@@ -1,0 +1,64 @@
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 15s
+    metrics_path: /metrics
+    
+  # PostgreSQL Exporter
+  - job_name: 'postgresql-exporter'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    
+  # MySQL Exporter
+  - job_name: 'mysql-exporter'
+    static_configs:
+      - targets: ['mysql-exporter:9104']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    
+  # MongoDB Exporter
+  - job_name: 'mongodb-exporter'
+    static_configs:
+      - targets: ['mongodb-exporter:9216']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    
+  # Node Exporter (System Metrics)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 15s
+    metrics_path: /metrics
+    
+  # DBCostOps Cost Engine API
+  - job_name: 'dbcostops-api'
+    static_configs:
+      - targets: ['cost-engine-api:8000']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    
+      
+  # Elasticsearch Exporter
+  - job_name: 'elasticsearch-exporter'
+    static_configs:
+      - targets: ['elasticsearch-exporter:9114']
+    scrape_interval: 30s
+    metrics_path: /metrics
+    
+  # Custom DBCostOps Metrics
+  - job_name: 'dbcostops-metrics'
+    static_configs:
+      - targets: ['cost-engine-api:8080']
+    scrape_interval: 60s
+    metrics_path: /dbcostops/metrics
+    
+  # Docker Container Metrics
+  - job_name: 'docker'
+    static_configs:
+      - targets: ['docker-exporter:9323']
+    scrape_interval: 30s
+    metrics_path: /metrics
