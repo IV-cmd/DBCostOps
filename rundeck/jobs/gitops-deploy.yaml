@@ -1,0 +1,34 @@
+# GitOps Deployment Job
+# Automated deployment using GitOps principles
+
+- name: GitOps Deploy
+  description: Deploy infrastructure using GitOps
+  group: Deployment
+  project: dbcostops
+  loglevel: INFO
+  nodefilters:
+    filter: "name: .*"
+
+  sequence:
+    keepgoing: false
+    strategy: node-first
+    commands:
+      - script: |
+          #!/bin/bash
+          echo "Starting GitOps deployment verification..."
+          echo "Verifying all DBCostOps services are healthy:"
+          SERVICES="cost-engine-api:8000/health elasticsearch:9200/_cluster/health prometheus:9090/-/healthy"
+          ALL_OK=true
+          for SVC in $SERVICES; do
+            HOST=$(echo $SVC | cut -d'/' -f1)
+            PATH_=$(echo $SVC | cut -d'/' -f2-)
+            RESP=$(curl -sf --max-time 5 "http://$SVC" 2>/dev/null) && STATUS="OK" || { STATUS="FAIL"; ALL_OK=false; }
+            echo "  [$STATUS] $HOST"
+          done
+          if [ "$ALL_OK" = "true" ]; then
+            echo "GitOps deployment verified — all services healthy"
+          else
+            echo "WARNING: some services not healthy"
+            exit 1
+          fi
+        description: Verify deployment — check all services are running via GitOps

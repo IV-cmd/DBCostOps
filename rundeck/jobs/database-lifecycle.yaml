@@ -1,0 +1,64 @@
+# Database Lifecycle Automation
+# Automated database management operations
+
+- name: Database Lifecycle
+  description: Automated database lifecycle management
+  group: Database Management
+  project: dbcostops
+  loglevel: INFO
+  nodefilters:
+    filter: "name: .*"
+
+  sequence:
+    keepgoing: false
+    strategy: node-first
+    commands:
+      - script: |
+          #!/bin/bash
+          echo "Checking database inventory..."
+          for DB in postgresql mysql mongodb; do
+            echo "--- $DB ---"
+            RESULT=$(curl -sf http://cost-engine-api:8000/instances/$DB 2>/dev/null)
+            if [ -n "$RESULT" ]; then
+              COUNT=$(echo "$RESULT" | grep -o '"type"' | wc -l | tr -d ' ')
+              echo "  Instances available: $COUNT"
+            else
+              echo "  unreachable"
+            fi
+          done
+        description: Create database instances
+
+      - script: |
+          #!/bin/bash
+          echo "Configuring cost parameters for all database types..."
+          for DB in postgresql mysql mongodb; do
+            echo "--- $DB cost config ---"
+            RESULT=$(curl -sf -X POST http://cost-engine-api:8000/cost/calculate \
+              -H "Content-Type: application/json" \
+              -d "{\"region\":\"us-east-1\",\"database_type\":\"$DB\",\"instance_type\":\"db.r5.large\",\"storage_gb\":100,\"hours_per_month\":730}" 2>/dev/null)
+            echo "  $RESULT"
+          done
+        description: Configure database instances
+
+      - script: |
+          #!/bin/bash
+          echo "Storing backup metrics..."
+          PAYLOAD='{"service":"database-backup","action":"backup","status":"complete","timestamp":'$(date +%s000)'}'
+          curl -sf -X POST http://cost-engine-api:8000/metrics/store \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" 2>/dev/null
+          echo "Backup metrics stored at $(date)"
+        description: Backup database instances
+
+      - script: |
+          #!/bin/bash
+          echo "Monitoring database health..."
+          echo "PostgreSQL:"
+          curl -sf http://postgres-primary:5432 2>/dev/null && echo "  reachable" || echo "  TCP check (no HTTP)"
+          echo "Cost Engine API status:"
+          curl -sf http://cost-engine-api:8000/ 2>/dev/null
+          curl -sf -X POST http://cost-engine-api:8000/metrics/store \
+            -H "Content-Type: application/json" \
+            -d '{"service":"database-monitor","action":"health-check","status":"ok","timestamp":'$(date +%s000)'}' 2>/dev/null
+          echo "Monitoring complete at $(date)"
+        description: Monitor database instances

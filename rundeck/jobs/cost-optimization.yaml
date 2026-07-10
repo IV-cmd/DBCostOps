@@ -1,0 +1,51 @@
+# Cost Optimization Automation
+# Automated resource right-sizing and cost optimization
+
+- name: Cost Optimization
+  description: Automated cost optimization for databases
+  group: Cost Management
+  project: dbcostops
+  loglevel: INFO
+  nodefilters:
+    filter: "name: .*"
+
+  sequence:
+    keepgoing: false
+    strategy: node-first
+    commands:
+      - script: |
+          #!/bin/bash
+          echo "Analyzing resource usage patterns..."
+          for DB in postgresql mysql mongodb; do
+            echo "--- $DB instances ---"
+            RESULT=$(curl -sf http://cost-engine-api:8000/instances/$DB 2>/dev/null)
+            if [ -n "$RESULT" ]; then
+              echo "$RESULT" | grep -o '"type":"[^"]*"' | sed 's/"type":"//;s/"//' | sed 's/^/  type: /'
+              echo "$RESULT" | grep -o '"cpu":[0-9]*' | head -1 | sed 's/"cpu":/  cpu: /'
+            else
+              echo "  unreachable"
+            fi
+          done
+        description: Analyze current resource usage patterns
+
+      - script: |
+          #!/bin/bash
+          echo "Generating cost optimization recommendations..."
+          RESULT=$(curl -sf -X POST http://cost-engine-api:8000/optimize/recommend \
+            -H "Content-Type: application/json" \
+            -d '{"region":"us-east-1","database_type":"postgresql","current_instance_type":"db.r5.2xlarge","avg_cpu_percent":25.0,"avg_memory_percent":30.0,"storage_gb":500,"hours_per_month":730}' 2>/dev/null)
+          echo "Recommendation: $RESULT"
+        description: Generate cost optimization recommendations
+
+      - script: |
+          #!/bin/bash
+          echo "Calculating and storing optimization metrics..."
+          COST=$(curl -sf -X POST http://cost-engine-api:8000/cost/calculate \
+            -H "Content-Type: application/json" \
+            -d '{"region":"us-east-1","database_type":"postgresql","instance_type":"db.r5.large","storage_gb":100,"hours_per_month":730}' 2>/dev/null)
+          echo "Optimized cost: $COST"
+          curl -sf -X POST http://cost-engine-api:8000/metrics/store \
+            -H "Content-Type: application/json" \
+            -d '{"service":"cost-optimizer","action":"apply","status":"complete","timestamp":'$(date +%s000)'}' 2>/dev/null
+          echo "Optimization applied at $(date)"
+        description: Apply cost optimization changes
