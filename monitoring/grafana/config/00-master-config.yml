@@ -1,0 +1,4 @@
+# Include all configuration modules in order
+include: 01-server-settings.yml
+include: 02-datasources.yml
+include: 03-dashboard-settings.yml

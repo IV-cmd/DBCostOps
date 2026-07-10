@@ -1,0 +1,75 @@
+apiVersion: 1
+
+datasources:
+  # Prometheus datasource for metrics
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+    jsonData:
+      timeInterval: "30s"
+      queryTimeout: "60s"
+      httpMethod: "POST"
+      manageAlerts: true
+      alertmanagerUid: "alertmanager"
+    secureJsonData: {}
+    
+  # Elasticsearch datasource for logs and analytics
+  - name: Elasticsearch-Cost
+    type: elasticsearch
+    access: proxy
+    url: http://elasticsearch:9200
+    database: "dbcostops_*"
+    jsonData:
+      interval: "Daily"
+      timeField: "@timestamp"
+      esVersion: "8.0.0"
+      maxConcurrentShardRequests: 5
+      logMessageField: "message"
+      logLevelField: "level"
+      includeFrozen: false
+      tlsSkipVerify: true
+    editable: true
+    
+  # PostgreSQL datasource for direct database access
+  - name: PostgreSQL-DBCostOps
+    type: postgres
+    access: proxy
+    url: postgres-primary:5432
+    database: dbcostops_monitoring
+    user: dbcostops_monitor
+    secureJsonData:
+      password: monitor_password
+    jsonData:
+      sslmode: "disable"
+      postgresVersion: 1500
+      timescaledb: false
+      
+  # MySQL datasource for direct database access
+  - name: MySQL-DBCostOps
+    type: mysql
+    access: proxy
+    url: mysql-primary:3306
+    database: dbcostops_monitoring
+    user: dbcostops_monitor
+    secureJsonData:
+      password: monitor_password
+    jsonData:
+      maxOpenConns: 10
+      maxIdleConns: 5
+      connMaxLifetime: 14400
+      
+  # MongoDB datasource for direct database access
+  - name: MongoDB-DBCostOps
+    type: mongodb
+    access: proxy
+    url: mongodb-primary:27017
+    database: dbcostops_monitoring
+    user: dbcostops_monitor
+    secureJsonData:
+      password: monitor_password
+    jsonData:
+      authSource: admin
+      tlsSkipVerify: true
