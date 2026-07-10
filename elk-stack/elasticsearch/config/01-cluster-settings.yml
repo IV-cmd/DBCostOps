@@ -1,7 +1,5 @@
 # Elasticsearch Cluster Configuration for DBCostOps
 # Purpose: Core cluster and node settings
-# Author: DBCostOps Team
-# Version: 2.0
 
 # =============================================================================
 # CLUSTER CONFIGURATION

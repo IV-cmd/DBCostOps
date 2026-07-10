@@ -1,0 +1,37 @@
+# Elasticsearch configuration for DBCostOps
+# This is the single file Elasticsearch reads — the 0x-*.yml module files are
+# documentation only and are not loaded by Elasticsearch automatically.
+
+# Cluster
+cluster.name: "dbcostops-cluster"
+node.name: "dbcostops-node-1"
+
+# Network
+network.host: 0.0.0.0
+http.port: 9200
+discovery.type: single-node
+
+# Paths
+path.data: /usr/share/elasticsearch/data
+path.logs: /usr/share/elasticsearch/logs
+
+# Memory
+bootstrap.memory_lock: false
+
+# Security
+xpack.security.enabled: false
+xpack.security.audit.enabled: false
+
+# Monitoring — xpack.monitoring.enabled was removed in ES 8.x; use Elastic Agent or Metricbeat for monitoring
+
+# Index management
+action.auto_create_index: "+dbcostops_*,+.logstash*,+.monitoring*,-*"
+action.destructive_requires_name: true
+
+# Performance
+indices.memory.index_buffer_size: 10%
+indices.queries.cache.size: 5%
+indices.fielddata.cache.size: 40%
+
+# Logging
+logger.root: INFO

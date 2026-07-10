@@ -1,7 +1,5 @@
 # Elasticsearch Master Configuration for DBCostOps
 # Purpose: Include all configuration modules
-# Author: DBCostOps Team
-# Version: 2.0
 
 # Include all configuration modules in order
 include: 01-cluster-settings.yml
