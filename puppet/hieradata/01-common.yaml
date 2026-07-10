@@ -1,0 +1,39 @@
+dbcostops::enabled: true
+dbcostops::environment: 'development'
+dbcostops::cost_optimization: true
+dbcostops::monitoring_enabled: true
+dbcostops::backup_enabled: true
+dbcostops::security_enabled: false
+dbcostops::compliance_enabled: false
+dbcostops::debug_enabled: false
+dbcostops::log_level: 'info'
+
+dbcostops::user: 'dbcostops'
+dbcostops::group: 'dbcostops'
+dbcostops::uid: 1001
+dbcostops::gid: 1001
+
+dbcostops::config_dir: '/etc/dbcostops'
+dbcostops::log_dir: '/var/log/dbcostops'
+dbcostops::data_dir: '/var/lib/dbcostops'
+dbcostops::run_dir: '/var/run/dbcostops'
+dbcostops::home_dir: '/home/dbcostops'
+
+dbcostops::service_provider: 'systemd'
+dbcostops::package_provider: 'yum'
+
+dbcostops::network:
+  api_host: '0.0.0.0'
+  api_port: 8000
+  monitoring_port: 8080
+  internal_network: '10.0.0.0/8'
+  external_network: '0.0.0.0/0'
+
+dbcostops::logging:
+  level: 'info'
+  format: 'json'
+  rotation: 'daily'
+  max_size: '100MB'
+  retention_days: 30
+  syslog_enabled: true
+  audit_log_enabled: true

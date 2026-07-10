@@ -1,0 +1,115 @@
+dbcostops::cost_engine:
+  api_url: 'http://cost-engine-api:8000'
+  refresh_interval: 30
+  optimization_enabled: true
+  budget_alerts: true
+  monthly_budget: 1000.00
+  cost_thresholds:
+    warning: 500.00
+    critical: 1000.00
+  optimization_algorithms:
+    - 'instance_rightsizing'
+    - 'storage_optimization'
+    - 'query_optimization'
+    - 'backup_optimization'
+
+cost_simulation:
+  cloud_provider: 'aws'
+  region: 'us-east-1'
+  currency: 'USD'
+  
+  aws:
+    region: 'us-east-1'
+    rds:
+      postgresql:
+        db_t3_micro: 0.017
+        db_t3_small: 0.034
+        db_t3_medium: 0.068
+        db_t3_large: 0.136
+        db_m5_large: 0.192
+        db_m5_xlarge: 0.384
+      mysql:
+        db_t3_micro: 0.018
+        db_t3_small: 0.036
+        db_t3_medium: 0.072
+        db_t3_large: 0.144
+        db_m5_large: 0.204
+        db_m5_xlarge: 0.408
+      mongodb:
+        db_t3_micro: 0.020
+        db_t3_small: 0.040
+        db_t3_medium: 0.080
+        db_t3_large: 0.160
+        db_m5_large: 0.226
+        db_m5_xlarge: 0.452
+    storage:
+      gp2_ssd:
+        gb_per_month: 0.10
+        min_size_gb: 20
+      io1_ssd:
+        gb_per_month: 0.125
+        iops_per_month: 0.0065
+        min_iops: 100
+        max_iops: 64000
+      st1_hdd:
+        gb_per_month: 0.045
+        min_size_gb: 500
+        max_throughput_mbps: 500
+      sc1_cold:
+        gb_per_month: 0.025
+        min_size_gb: 500
+        max_throughput_mbps: 250
+    network:
+      data_transfer_out:
+        first_10_tb: 0.09
+        next_40_tb: 0.085
+        next_100_tb: 0.07
+        over_150_tb: 0.05
+      data_transfer_in: 0.00
+      cross_region: 0.02
+
+optimization_recommendations:
+  enabled: true
+  analysis_interval: 3600  # 1 hour
+  confidence_threshold: 0.8
+  max_recommendations: 50
+  
+  categories:
+    instance_rightsizing:
+      enabled: true
+      cpu_threshold: 70
+      memory_threshold: 80
+      lookback_days: 7
+      
+    storage_optimization:
+      enabled: true
+      utilization_threshold: 50
+      compression_enabled: true
+      tiered_storage: true
+      
+    query_optimization:
+      enabled: true
+      slow_query_threshold: 1.0  # seconds
+      index_optimization: true
+      query_cache_optimization: true
+      
+    backup_optimization:
+      enabled: true
+      retention_analysis: true
+      compression_analysis: true
+      schedule_optimization: true
+
+budget_management:
+  enabled: true
+  currency: 'USD'
+  reporting_period: 'monthly'
+  alert_thresholds:
+    warning: 80
+    critical: 95
+    
+  budget_categories:
+    compute: 40
+    storage: 30
+    network: 15
+    backup: 10
+    monitoring: 5

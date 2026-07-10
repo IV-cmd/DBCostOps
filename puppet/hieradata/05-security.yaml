@@ -1,0 +1,269 @@
+security:
+  ssl_enabled: true
+  cert_management: 'letsencrypt'
+  firewall_enabled: true
+  audit_logging: true
+  intrusion_detection: true
+  encryption_at_rest: true
+  encryption_in_transit: true
+  
+  # Certificate management
+  certificates:
+    ca_path: '/etc/ssl/certs'
+    cert_path: '/etc/ssl/certs'
+    key_path: '/etc/ssl/private'
+    renewal_days: 30
+    
+  # Firewall configuration
+  firewall:
+    provider: 'iptables'
+    default_policy: 'DROP'
+    trusted_networks:
+      - '10.0.0.0/8'
+      - '172.16.0.0/12'
+      - '192.168.0.0/16'
+      
+  # Access control
+  access_control:
+    ssh_enabled: true
+    ssh_port: 22
+    ssh_key_only: true
+    password_auth: false
+    
+    # User management
+    sudo_users:
+      - 'dbcostops'
+      - 'admin'
+    
+    # Group management
+    admin_groups:
+      - 'sudo'
+      - 'wheel'
+
+database_security:
+  postgresql:
+    ssl_enabled: true
+    ssl_mode: 'require'
+    authentication_method: 'scram-sha-256'
+    
+    # Network security
+    listen_addresses: 'localhost'
+    port: 5432
+    
+    # User security
+    default_privileges: 'none'
+    row_level_security: true
+    
+    # Auditing
+    audit_enabled: true
+    audit_log_format: 'csv'
+    audit_log_path: '/var/log/postgresql/audit.log'
+    
+  mysql:
+    ssl_enabled: true
+    ssl_ca: '/etc/ssl/certs/ca.pem'
+    ssl_cert: '/etc/ssl/certs/mysql-server.crt'
+    ssl_key: '/etc/ssl/private/mysql-server.key'
+    
+    # Authentication
+    authentication_plugin: 'caching_sha2_password'
+    
+    # Network security
+    bind_address: '127.0.0.1'
+    port: 3306
+    
+    # Auditing
+    audit_log_format: 'JSON'
+    audit_log_policy: 'ALL'
+    audit_log_file: '/var/log/mysql/audit.log'
+    
+  mongodb:
+    ssl_enabled: true
+    ssl_mode: 'requireSSL'
+    ssl_pep_file: '/etc/ssl/certs/mongodb.pem'
+    ssl_pem_key_file: '/etc/ssl/private/mongodb.key'
+    
+    # Authentication
+    authentication_mechanism: 'SCRAM-SHA-256'
+    
+    # Network security
+    bind_ip: '127.0.0.1'
+    port: 27017
+    
+    # Authorization
+    role_based_access: true
+    default_roles:
+      - 'read'
+      - 'readWrite'
+      
+      
+compliance:
+  enabled: true
+  standards:
+    - 'SOC2'
+    - 'GDPR'
+    - 'HIPAA'
+    - 'PCI-DSS'
+    
+  checks:
+    encryption_at_rest: true
+    encryption_in_transit: true
+    access_logging: true
+    backup_verification: true
+    password_policy: true
+    audit_trail: true
+    data_retention: true
+    
+  # SOC2 compliance
+  soc2:
+    security_controls:
+      - 'access_control'
+      - 'system_operations'
+      - 'change_management'
+      - 'risk_assessment'
+      
+    audit_requirements:
+      - 'user_access_logs'
+      - 'system_change_logs'
+      - 'security_incident_logs'
+      
+  # GDPR compliance
+  gdpr:
+    data_protection: true
+    consent_management: true
+    data_portability: true
+    right_to_erasure: true
+    breach_notification: true
+    
+    retention_policies:
+      user_data: '2_years'
+      audit_logs: '7_years'
+      financial_data: '7_years'
+      
+  # HIPAA compliance
+  hipaa:
+    phi_protection: true
+    access_controls: true
+    audit_controls: true
+    integrity_controls: true
+    transmission_security: true
+    
+    audit_requirements:
+      - 'phi_access_logs'
+      - 'system_activity_logs'
+      - 'security_incident_logs'
+      
+  # PCI-DSS compliance
+  pci_dss:
+    cardholder_data_protection: true
+    secure_network: true
+    vulnerability_management: true
+    access_control: true
+    monitoring_testing: true
+    
+    security_standards:
+      - 'firewall_configuration'
+      - 'secure_passwords'
+      - 'encryption_standards'
+      - 'access_limitation'
+
+audit_logging:
+  enabled: true
+  log_format: 'json'
+  log_rotation: 'daily'
+  retention_days: 365
+  
+  # Audit events
+  events:
+    - 'user_login'
+    - 'user_logout'
+    - 'privilege_escalation'
+    - 'configuration_change'
+    - 'data_access'
+    - 'system_error'
+    - 'security_incident'
+    
+  # Log destinations
+  destinations:
+    - 'local_file'
+    - 'syslog'
+    - 'elasticsearch'
+    
+  # Alerting
+  alert_events:
+    - 'failed_login_attempts'
+    - 'privilege_escalation'
+    - 'configuration_change'
+    - 'security_incident'
+
+intrusion_detection:
+  enabled: true
+  provider: 'ossec'
+  
+  # Rules
+  rules:
+    - 'failed_login_attempts'
+    - 'unusual_network_activity'
+    - 'privilege_escalation'
+    - 'file_integrity_violation'
+    - 'suspicious_commands'
+    
+  # Alerting
+  alerts:
+    email_enabled: true
+    email_recipients:
+      - 'security@company.com'
+      - 'admin@company.com'
+      
+    slack_enabled: false
+    slack_webhook: ''
+    
+  # Monitoring
+  monitoring:
+    real_time: true
+    log_analysis: true
+    network_monitoring: true
+
+password_policy:
+  enabled: true
+  min_length: 12
+  max_length: 64
+  complexity:
+    require_uppercase: true
+    require_lowercase: true
+    require_numbers: true
+    require_special_chars: true
+    forbidden_patterns:
+      - 'password'
+      - '123456'
+      - 'qwerty'
+      
+  # Expiration
+  expiration_days: 90
+  warning_days: 7
+  
+  # History
+  history_count: 12
+  prevent_reuse: true
+  
+  # Lockout policy
+  lockout_threshold: 5
+  lockout_duration: 900  # 15 minutes
+
+backup_security:
+  encryption_enabled: true
+  encryption_algorithm: 'AES-256'
+  key_management: 'vault'
+  
+  # Access control
+  backup_user: 'backup'
+  backup_group: 'backup'
+  backup_permissions: '0600'
+  
+  # Network security
+  backup_network_isolated: true
+  backup_encrypted_transfer: true
+  
+  # Verification
+  backup_integrity_check: true
+  backup_restoration_test: true

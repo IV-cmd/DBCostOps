@@ -1,0 +1,217 @@
+puppet:
+  server:
+    dns_alt_names:
+      - 'puppet-server'
+      - 'localhost'
+      - 'puppet.dcostops.local'
+    environment: 'production'
+    autosign: true
+    ca_enabled: true
+    
+    # Performance settings
+    max_active_instances: 4
+    max_requests_per_instance: 0
+    max_queued_requests: 0
+    
+    # SSL settings
+    ssl_dir: '/etc/puppetlabs/puppet/ssl'
+    privatekeydir: '$ssldir/private_keys'
+    publickeydir: '$ssldir/public_keys'
+    requestdir: '$ssldir/certificate_requests'
+    certdir: '$ssldir/certs'
+    
+    # Logging
+    log_level: 'info'
+    logdest: 'console'
+    
+    # File serving
+    fileserverconfig: '/etc/puppetlabs/puppet/fileserver.conf'
+    modulepath: '/etc/puppetlabs/code/modules:/etc/puppetlabs/code/environments/$environment/modules'
+    
+    # Reports
+    reportdir: '/var/lib/puppet/reports'
+    reports: 'store,http'
+    reporturl: 'http://puppet-server:8080/reports/upload'
+    
+    # Environment
+    environment_timeout: 'unlimited'
+    environmentpath: '/etc/puppetlabs/code/environments'
+    basemodulepath: '/etc/puppetlabs/code/modules'
+    
+  agent:
+    server: 'puppet-server'
+    runinterval: 1800
+    show_diff: true
+    usecacheonfailure: false
+    
+    # SSL settings
+    ssldir: '/etc/puppetlabs/puppet/ssl'
+    certname: '%{facts.fqdn}'
+    
+    # Logging
+    log_level: 'info'
+    logdir: '/var/log/puppetlabs/puppet'
+    rundir: '/var/run/puppetlabs'
+    
+    # Plugins
+    pluginsync: true
+    pluginfactdest: '/var/lib/puppet/facts.d'
+    factpath: '/var/lib/puppet/facts.d'
+    
+    # Reports
+    report: true
+    report_server: 'puppet-server'
+    report_port: 8140
+    
+    # Configuration
+    configtimeout: 120
+    use_cached_catalog: false
+    use_srv_records: false
+
+puppet_console:
+  enabled: true
+  port: 443
+  ssl_port: 443
+  host: 'puppet-server'
+  
+  # Database
+  database:
+    adapter: 'postgresql'
+    database: 'pe-puppetdb'
+    username: 'pe-puppetdb'
+    password: 'puppetdb_password'
+    host: 'localhost'
+    port: 5432
+    
+  # Authentication
+  authentication:
+    provider: 'ldap'
+    ldap_server: 'ldap://ldap-server:389'
+    ldap_base_dn: 'ou=users,dc=company,dc=com'
+    ldap_user_dn: 'cn=admin,dc=company,dc=com'
+    ldap_user_password: 'ldap_password'
+    
+  # RBAC
+  rbac:
+    enabled: true
+    default_role: 'Viewer'
+    
+    roles:
+      - name: 'Administrator'
+        permissions:
+          - '*'
+          
+      - name: 'Operator'
+        permissions:
+          - 'puppet:*'
+          - 'nodes:*'
+          - 'reports:*'
+          
+      - name: 'Viewer'
+        permissions:
+          - 'nodes:view'
+          - 'reports:view'
+          - 'puppet:read'
+
+puppetdb:
+  enabled: true
+  port: 8080
+  ssl_port: 8081
+  
+  # Database
+  database:
+    adapter: 'postgresql'
+    database: 'pe-puppetdb'
+    username: 'pe-puppetdb'
+    password: 'puppetdb_password'
+    host: 'localhost'
+    port: 5432
+    pool_size: 10
+    max_pool_size: 20
+    
+  # Performance
+  command_processing_threads: 4
+  threads: 4
+  ssl_protocols: 'TLSv1.2,TLSv1.3'
+  ssl_ciphers: 'ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256'
+    
+  # Certificate management
+  cert_management:
+    ca_cert: '/etc/ssl/certs/ca.pem'
+    server_cert: '/etc/ssl/certs/puppet-server.crt'
+    server_key: '/etc/ssl/private/puppet-server.key'
+    
+    # Auto-renewal
+    auto_renewal: true
+    renewal_days: 30
+    
+    # Certificate validation
+    cert_validation: true
+    cert_revocation_check: true
+
+backup:
+  enabled: true
+  schedule: 'daily'
+  retention_days: 30
+  compression: true
+  offsite_backup: true
+  
+  # Backup locations
+  local_backup_path: '/var/backups/dbcostops'
+  remote_backup_path: 's3://dbcostops-backups'
+  
+  # Backup types
+  backup_types:
+    - 'configuration'
+    - 'database'
+    - 'logs'
+    - 'certificates'
+    
+  # Encryption
+  encryption:
+    enabled: true
+    algorithm: 'AES-256'
+    key_source: 'vault'
+    
+  # Verification
+  verification:
+    enabled: true
+    integrity_check: true
+    restoration_test: true
+    test_frequency: 'weekly'
+
+compliance:
+  enabled: true
+  standards:
+    - 'SOC2'
+    - 'GDPR'
+    - 'HIPAA'
+    
+  checks:
+    encryption_at_rest: true
+    encryption_in_transit: true
+    access_logging: true
+    backup_verification: true
+    password_policy: true
+    
+  # SOC2 requirements
+  soc2:
+    security_controls:
+      - 'access_control'
+      - 'system_operations'
+      - 'change_management'
+      - 'risk_assessment'
+      
+  # GDPR requirements
+  gdpr:
+    data_protection: true
+    consent_management: true
+    data_portability: true
+    right_to_erasure: true
+    
+  # HIPAA requirements
+  hipaa:
+    phi_protection: true
+    access_controls: true
+    audit_controls: true
+    integrity_controls: true

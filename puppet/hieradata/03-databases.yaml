@@ -1,0 +1,136 @@
+databases:
+  postgresql:
+    version: '15'
+    max_connections: 100
+    shared_buffers: '256MB'
+    effective_cache_size: '768MB'
+    maintenance_work_mem: '64MB'
+    checkpoint_completion_target: 0.9
+    wal_buffers: '16MB'
+    default_statistics_target: 100
+    random_page_cost: 1.1
+    effective_io_concurrency: 200
+    work_mem: '4MB'
+    min_wal_size: '1GB'
+    max_wal_size: '4GB'
+    
+    # Performance tuning
+    cost_optimization: true
+    backup_retention: 7
+    monitoring_interval: 30
+    slow_query_threshold: 1.0
+    
+    # Connection settings
+    listen_addresses: '*'
+    port: 5432
+    unix_socket_directories: '/var/run/postgresql'
+    
+    # Logging
+    logging_collector: true
+    log_directory: 'pg_log'
+    log_filename: 'postgresql-%Y-%m-%d_%H%M%S.log'
+    log_rotation_age: '1d'
+    log_rotation_size: '100MB'
+    log_min_duration_statement: 1000
+    
+    # Security
+    ssl: true
+    ssl_cert_file: '/etc/ssl/certs/postgresql.crt'
+    ssl_key_file: '/etc/ssl/private/postgresql.key'
+    
+    # Extensions
+    enabled_extensions:
+      - 'pg_stat_statements'
+      - 'pg_buffercache'
+      - 'pg_freespacemap'
+
+  mysql:
+    version: '8.0'
+    max_connections: 150
+    innodb_buffer_pool_size: '512MB'
+    innodb_log_file_size: '128MB'
+    innodb_flush_log_at_trx_commit: 2
+    innodb_flush_method: 'O_DIRECT'
+    # Performance tuning
+    innodb_buffer_pool_instances: 1
+    innodb_io_capacity: 200
+    innodb_io_capacity_max: 2000
+    innodb_read_io_threads: 4
+    innodb_write_io_threads: 4
+    innodb_thread_concurrency: 0
+    
+    # Connection settings
+    bind_address: '0.0.0.0'
+    port: 3306
+    socket: '/var/run/mysqld/mysqld.sock'
+    
+    # Logging
+    log_error: '/var/log/mysql/error.log'
+    slow_query_log: true
+    slow_query_log_file: '/var/log/mysql/slow.log'
+    long_query_time: 1.0
+    
+    # Security
+    ssl: true
+    ssl_ca: '/etc/ssl/certs/ca.pem'
+    ssl_cert: '/etc/ssl/certs/mysql-server.crt'
+    ssl_key: '/etc/ssl/private/mysql-server.key'
+    
+    # Binary logging
+    log_bin: true
+    binlog_format: 'ROW'
+    expire_logs_days: 7
+    max_binlog_size: '100MB'
+    
+    # Monitoring
+    cost_optimization: true
+    backup_retention: 7
+    monitoring_interval: 30
+    performance_schema: true
+
+  mongodb:
+    version: '7.0'
+    storage_engine: 'wiredTiger'
+    cache_size_gb: 1
+    journal_commit_interval: 100
+    max_connections: 1000
+    
+    # WiredTiger settings
+    wiredtiger_cache_size_gb: 1
+    wiredtiger_journal_compressor: 'snappy'
+    wiredtiger_collection_block_compressor: 'snappy'
+    wiredtiger_index_prefix_compression: true
+    
+    # Connection settings
+    bind_ip: '0.0.0.0'
+    port: 27017
+    unix_socket_prefix: '/tmp'
+    
+    # Security
+    security:
+      authorization: 'enabled'
+      javascript_execution: 'false'
+    
+    # Replication
+    replication:
+      replSetName: 'dbcostops-replica'
+    
+    # Profiling
+    operation_profiling:
+      slow_op_threshold_ms: 100
+      mode: 'slowOp'
+    
+    # Logging
+    system_log:
+      destination: 'file'
+      log_append: true
+      log_rotate: 'rename'
+      path: '/var/log/mongodb/mongod.log'
+      log_level: 1
+    
+    # Monitoring
+    cost_optimization: true
+    backup_retention: 7
+    monitoring_interval: 30
+
+  

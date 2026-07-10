@@ -1,0 +1,213 @@
+monitoring:
+  prometheus:
+    enabled: true
+    port: 9090
+    retention: '200h'
+    scrape_interval: '30s'
+    evaluation_interval: '15s'
+    
+    # Storage settings
+    storage:
+      path: '/var/lib/prometheus'
+      tsdb_retention_time: '15d'
+      tsdb_retention_size: '10GB'
+    
+    # Alerting
+    alerting:
+      enabled: true
+      alertmanager_url: 'http://alertmanager:9093'
+      
+    # Remote write
+    remote_write:
+      enabled: false
+      url: 'http://elasticsearch:9200/_prometheus/metrics'
+      queue_config:
+        max_samples_per_send: 1000
+        max_shards: 200
+        capacity: 2500
+
+  grafana:
+    enabled: true
+    port: 3000
+    admin_user: 'admin'
+    admin_password: 'admin123'
+    
+    # Database
+    database:
+      type: 'sqlite3'
+      path: '/var/lib/grafana/grafana.db'
+      host: 'localhost'
+      port: 3306
+      name: 'grafana'
+      user: 'grafana'
+      password: 'grafana'
+    
+    # Security
+    security:
+      secret_key: 'dbcostops_grafana_secret'
+      admin_user: 'admin'
+      admin_password: 'admin123'
+      disable_signout_menu: false
+      
+    # Users
+    users:
+      allow_sign_up: false
+      allow_org_create: false
+      auto_assign_org: true
+      auto_assign_org_role: 'Viewer'
+      
+    # Analytics
+    analytics:
+      reporting_enabled: false
+      check_for_updates: false
+
+  elk:
+    enabled: true
+    
+    elasticsearch:
+      port: 9200
+      cluster_name: 'dbcostops-cluster'
+      node_name: 'dbcostops-node-1'
+      data_path: '/usr/share/elasticsearch/data'
+      logs_path: '/usr/share/elasticsearch/logs'
+      
+      # Memory settings
+      heap_size: '1g'
+      
+      # Index settings
+      refresh_interval: '30s'
+      number_of_shards: 1
+      number_of_replicas: 0
+      
+      # Security
+      security_enabled: false
+      ssl_enabled: false
+      
+    logstash:
+      port: 5044
+      pipeline_workers: 4
+      batch_size: 125
+      batch_delay: 50
+      
+      # Input configuration
+      inputs:
+        beats:
+          port: 5044
+        tcp_ports:
+          - port: 5000
+            service: 'postgresql'
+          - port: 5001
+            service: 'mysql'
+          - port: 5002
+            service: 'mongodb'
+          - port: 5003
+            service: 'cost-optimizer'
+          - port: 5004
+            service: 'backup'
+          
+      # Output configuration
+      output:
+        elasticsearch:
+          hosts: ['elasticsearch:9200']
+          index: 'dbcostops-%{+YYYY.MM.dd}'
+          
+    kibana:
+      port: 5601
+      server_host: '0.0.0.0'
+      elasticsearch_url: 'http://elasticsearch:9200'
+      
+      # Index patterns
+      index_patterns:
+        - 'dbcostops_*'
+        
+      # Default settings
+      default_app: 'discover'
+      time_filter: 'now-7d'
+      
+    # Logging configuration
+    log_retention: '30d'
+    log_rotation: 'daily'
+
+  alertmanager:
+    enabled: true
+    port: 9093
+    
+    # Global settings
+    global:
+      smtp_smarthost: 'localhost:587'
+      smtp_from: 'dbcostops-alerts@company.com'
+      
+    # Route configuration
+    route:
+      group_by: ['alertname', 'cluster', 'service']
+      group_wait: '10s'
+      group_interval: '10s'
+      repeat_interval: '1h'
+      receiver: 'web.hook'
+      
+    # Receivers
+    receivers:
+      - name: 'web.hook'
+        email_configs:
+          - to: 'admin@company.com'
+            subject: '[ALERT] DBCostOps: {{ .GroupLabels.alertname }}'
+            body: |
+              {{ range .Alerts }}
+              Alert: {{ .Annotations.summary }}
+              Description: {{ .Annotations.description }}
+              {{ end }}
+
+  node_exporter:
+    enabled: true
+    port: 9100
+    enabled_collectors:
+      - 'cpu'
+      - 'diskstats'
+      - 'filesystem'
+      - 'loadavg'
+      - 'meminfo'
+      - 'netdev'
+      - 'time'
+      
+    # Custom collectors
+    custom_collectors:
+      - 'dbcostops'
+      - 'database_stats'
+
+  exporters:
+    postgresql:
+      enabled: true
+      port: 9187
+      datasource_url: 'postgresql://postgres:password@localhost:5432/postgres?sslmode=disable'
+      
+    mysql:
+      enabled: true
+      port: 9104
+      datasource_url: 'mysqluser:password@(localhost:3306)/'
+      
+    mongodb:
+      enabled: true
+      port: 9216
+      uri: 'mongodb://localhost:27017'
+      
+    
+  dashboards:
+    - name: 'cost-overview'
+      title: 'DBCOSTOPS - Cost Overview'
+      tags: ['dbcostops', 'cost', 'overview']
+      
+    - name: 'performance'
+      title: 'DBCOSTOPS - Database Performance'
+      tags: ['dbcostops', 'performance', 'database']
+      
+    - name: 'optimization'
+      title: 'DBCOSTOPS - Cost Optimization'
+      tags: ['dbcostops', 'optimization', 'recommendations']
+      
+    - name: 'backup'
+      title: 'DBCOSTOPS - Backup Monitoring'
+      tags: ['dbcostops', 'backup', 'monitoring']
+      
+    - name: 'alerts'
+      title: 'DBCOSTOPS - Alerts & Notifications'
+      tags: ['dbcostops', 'alerts', 'notifications']
