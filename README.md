@@ -249,6 +249,26 @@ The system includes realistic cost simulation for:
 - **Resource Utilization**: CPU, memory, storage usage
 - **Compliance Metrics**: Compliance score and remediation
 
+## 🧪 Running Tests
+
+### Service Validation
+`scripts/test.sh` curls live endpoints and inspects running Docker containers, so start the stack first:
+```bash
+docker-compose up -d   # or ./scripts/up.sh
+./scripts/test.sh
+```
+
+### Python Unit Tests
+`pytest` is configured as a dev dependency in `requirements.txt`.
+
+### Puppet & Hiera Validation (matches CI)
+These mirror the `validate` job in `.github/workflows/ci.yml`:
+```bash
+find puppet/ -name "*.pp" -exec puppet parser validate {} \;
+find hieradata/ -name "*.yaml" -exec yamllint {} \;
+```
+> Note: Hiera data currently lives in `puppet/hieradata/`; to lint it locally, run `find puppet/hieradata/ -name "*.yaml" -exec yamllint {} \;`.
+
 ## 🤝 Contributing
 
 1. Fork the repository
